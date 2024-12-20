@@ -4,9 +4,7 @@
 
 A modern e-commerce platform built with Next.js 14, Sanity CMS, and Clerk Authentication. Features a WhatsApp-based payment system and intelligent product recommendations.
 
-🌐 [Live Demo](https://indios.vercel.app) | 📚 [Sanity Studio](https://indios.sanity.studio) |
-
-|
+🌐 [Live Demo](https://indios.vercel.app) | 📚 [Sanity Studio](https://indios.sanity.studio) 
 
 ## Features
 
