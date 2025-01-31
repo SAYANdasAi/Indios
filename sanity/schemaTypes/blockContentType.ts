@@ -1,5 +1,5 @@
-import {defineType, defineArrayMember} from 'sanity'
-import {ImageIcon} from '@sanity/icons'
+import { defineType, defineArrayMember } from 'sanity'
+import { BiImage } from "react-icons/bi"
 
 /**
  * This is the schema type for block content used in the post document type
@@ -62,7 +62,7 @@ export const blockContentType = defineType({
     // as a block type.
     defineArrayMember({
       type: 'image',
-      icon: ImageIcon,
+      icon: BiImage,
       options: {hotspot: true},
       fields: [
         {

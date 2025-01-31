@@ -1,4 +1,4 @@
-import { TrolleyIcon } from "@sanity/icons";
+import { FaShoppingCart } from "react-icons/fa";
 // import { title } from "process";
 import { defineField, defineType } from "sanity";
 
@@ -6,7 +6,7 @@ export const productType = defineType( {
     name: "product",
     title: "Product",
     type: "document",
-    icon: TrolleyIcon,
+    icon: FaShoppingCart,
     fields: [
         defineField({
             name: "name",

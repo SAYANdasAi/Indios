@@ -1,11 +1,11 @@
-import { BasketIcon } from "@sanity/icons";
+import { FaShoppingBasket } from "react-icons/fa";
 import { defineArrayMember, defineField, defineType } from "sanity";
 
 export const orderType = defineType({
     name: "order",
     title: "Order",
     type: "document",
-    icon: BasketIcon,
+    icon: FaShoppingBasket,
     fields: [
         defineField({
             name: "orderNumber",

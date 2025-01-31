@@ -8,6 +8,8 @@ import { Loader2, X } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import Script from "next/script";
 import { QRCodeSVG } from 'qrcode.react';
+import useOrderStore from "@/store/orderStore";
+import { urlFor } from "@/sanity/lib/image";
 
 declare global {
     interface Window {
@@ -43,6 +45,7 @@ export default function PaymentPage() {
     const searchParams = useSearchParams();
     const orderId = searchParams.get("orderId");
     const { items, getTotalPrice, clearBasket } = useBasketStore();
+    const { addOrder } = useOrderStore();
     const total = getTotalPrice();
     const [loading, setLoading] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState<"whatsapp" | "razorpay" | null>(null);
@@ -88,7 +91,17 @@ export default function PaymentPage() {
                 },
                 body: JSON.stringify({
                     orderId,
-                    items,
+                    items: items.map(item => ({
+                        product: {
+                            _id: item.product._id,
+                            name: item.product.name || 'Unnamed Product', 
+                            price: item.product.price || 0,
+                            image: item.product.image ? {
+                                url: urlFor(item.product.image).url()
+                            } : null
+                        },
+                        quantity: item.quantity
+                    })),
                     total,
                     paymentId: whatsappPaymentId,
                     paymentMethod: 'whatsapp',
@@ -156,7 +169,24 @@ export default function PaymentPage() {
                 window.open(whatsappUrl, '_blank');
             }, 1500);
 
-            // Clear basket and redirect to success page
+            // Add order to local store
+            addOrder({
+                id: data.orderId || orderId || '',
+                items: items.map(item => ({
+                    product: {
+                        _id: item.product._id,
+                        name: item.product.name || 'Unnamed Product', 
+                        price: item.product.price || 0,
+                        image: item.product.image ? {
+                            url: urlFor(item.product.image).url()
+                        } : null
+                    },
+                    quantity: item.quantity
+                })),
+                total,
+                status: 'processing',
+                date: new Date().toISOString(),
+            });
             clearBasket();
             router.push(`/success?payment_id=${whatsappPaymentId}&order_id=${data.orderId}&order_number=${orderId}`);
 
@@ -184,24 +214,106 @@ export default function PaymentPage() {
                 }),
             });
 
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Payment initialization failed');
+            }
+
             const data = await response.json();
             
             if (data.id) {
+                // Create order in Sanity first
+                const orderResponse = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        orderId,
+                        items: items.map(item => ({
+                            product: {
+                                _id: item.product._id,
+                                name: item.product.name || 'Unnamed Product', 
+                                price: item.product.price || 0,
+                                image: item.product.image ? {
+                                    url: urlFor(item.product.image).url()
+                                } : null
+                            },
+                            quantity: item.quantity
+                        })),
+                        total,
+                        paymentId: data.id,
+                        paymentMethod: 'razorpay',
+                        razorpayOrderId: data.id,
+                        billingAddress,
+                        userId: user?.id,
+                        userEmail: user?.emailAddresses[0]?.emailAddress
+                    }),
+                });
+
+                if (!orderResponse.ok) {
+                    throw new Error('Failed to create order');
+                }
+
+                const orderData = await orderResponse.json();
+
                 const options = {
-                    key: process.env.NEXT_PUBLIC_RAZORPAY_KEY,
+                    key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
                     amount: data.amount,
                     currency: data.currency,
                     name: "Indios",
                     description: `Order #${orderId}`,
                     order_id: data.id,
-                    handler: async function () {
-                        clearBasket();
-                        router.push('/success?method=razorpay');
+                    handler: async function (response: any) {
+                        try {
+                            // Add order to local store for Razorpay payment
+                            addOrder({
+                                id: orderData.orderId,
+                                items: items.map(item => ({
+                                    product: {
+                                        _id: item.product._id,
+                                        name: item.product.name || 'Unnamed Product', 
+                                        price: item.product.price || 0,
+                                        image: item.product.image ? {
+                                            url: urlFor(item.product.image).url()
+                                        } : null
+                                    },
+                                    quantity: item.quantity
+                                })),
+                                total,
+                                status: 'processing',
+                                date: new Date().toISOString(),
+                            });
+
+                            // Update order status in Sanity
+                            await fetch('/api/orders/status', {
+                                method: 'PATCH',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    orderId: orderData.orderId,
+                                    status: 'processing',
+                                    razorpayPaymentId: response.razorpay_payment_id,
+                                }),
+                            });
+
+                            clearBasket();
+                            router.push(`/success?payment_id=${response.razorpay_payment_id}&order_id=${orderData.orderId}&order_number=${orderId}`);
+                        } catch (error) {
+                            console.error('Error processing Razorpay success:', error);
+                            alert('Payment successful but order processing failed. Please contact support.');
+                        }
                     },
                     prefill: {
                         email: user.emailAddresses[0]?.emailAddress,
                         name: user.fullName,
                     },
+                    modal: {
+                        ondismiss: function() {
+                            setLoading(false);
+                        }
+                    }
                 };
 
                 const paymentObject = new window.Razorpay(options);
@@ -209,6 +321,7 @@ export default function PaymentPage() {
             }
         } catch (error) {
             console.error('Error processing Razorpay payment:', error);
+            alert(error instanceof Error ? error.message : 'Payment initialization failed');
         } finally {
             setLoading(false);
         }

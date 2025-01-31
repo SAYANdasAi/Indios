@@ -65,21 +65,23 @@ export default function ChatBot() {
             {!isOpen ? (
                 <Button
                     onClick={() => setIsOpen(true)}
-                    className="fixed bottom-4 right-4 rounded-full w-12 h-12 bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-lg z-50"
+                    className="fixed bottom-16 right-4 rounded-full w-12 h-12 md:w-14 md:h-14 bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-lg z-[1000]"
                 >
-                    <MessageCircle className="w-6 h-6" />
+                    <MessageCircle className="w-6 h-6 md:w-7 md:h-7" />
                 </Button>
             ) : (
-                <div className={`fixed bottom-4 right-4 w-80 bg-white rounded-lg shadow-xl transition-all duration-300 z-50 ${isMinimized ? 'h-14' : 'h-[500px]'}`}>
+                <div className={`fixed ${isMinimized ? 'bottom-16 right-4 w-auto' : 'bottom-0 right-0 md:bottom-16 md:right-4 w-full md:w-96 max-w-full'} bg-white rounded-lg shadow-xl transition-all duration-300 z-[1000] ${
+                    isMinimized ? 'h-14' : 'h-[80vh] md:h-[600px]'
+                }`}>
                     {/* Header */}
-                    <div className="flex items-center justify-between p-4 border-b">
-                        <h3 className="font-semibold">Chat Support</h3>
+                    <div className="flex items-center justify-between p-3 md:p-4 border-b">
+                        <h3 className="font-semibold text-base md:text-lg">Chat Support</h3>
                         <div className="flex gap-2">
-                            <button onClick={() => setIsMinimized(!isMinimized)}>
-                                <Minus className="w-5 h-5 text-gray-500 hover:text-gray-700" />
+                            <button onClick={() => setIsMinimized(!isMinimized)} className="p-1">
+                                <Minus className="w-5 h-5 md:w-6 md:h-6 text-gray-500 hover:text-gray-700" />
                             </button>
-                            <button onClick={() => setIsOpen(false)}>
-                                <X className="w-5 h-5 text-gray-500 hover:text-gray-700" />
+                            <button onClick={() => setIsOpen(false)} className="p-1">
+                                <X className="w-5 h-5 md:w-6 md:h-6 text-gray-500 hover:text-gray-700" />
                             </button>
                         </div>
                     </div>
@@ -87,14 +89,14 @@ export default function ChatBot() {
                     {!isMinimized && (
                         <>
                             {/* Messages */}
-                            <div className="p-4 h-[380px] overflow-y-auto">
+                            <div className="p-3 md:p-4 h-[calc(80vh-8rem)] md:h-[460px] overflow-y-auto">
                                 {messages.map((message, index) => (
                                     <div
                                         key={index}
-                                        className={`mb-4 ${message.isBot ? 'text-left' : 'text-right'}`}
+                                        className={`mb-3 md:mb-4 ${message.isBot ? 'text-left' : 'text-right'}`}
                                     >
                                         <div
-                                            className={`inline-block p-3 rounded-lg ${
+                                            className={`inline-block p-2.5 md:p-3 rounded-lg text-sm md:text-base ${
                                                 message.isBot
                                                     ? 'bg-gray-100 text-gray-800'
                                                     : 'bg-red-500 text-white'
@@ -106,7 +108,7 @@ export default function ChatBot() {
                                 ))}
                                 {isLoading && (
                                     <div className="text-left">
-                                        <div className="inline-block p-3 rounded-lg bg-gray-100 text-gray-800">
+                                        <div className="inline-block p-2.5 md:p-3 rounded-lg bg-gray-100 text-gray-800">
                                             <div className="flex items-center gap-2">
                                                 <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
                                                 <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce delay-100"></div>
@@ -118,7 +120,7 @@ export default function ChatBot() {
                             </div>
 
                             {/* Input */}
-                            <div className="p-4 border-t">
+                            <div className="p-3 md:p-4 border-t">
                                 <div className="flex gap-2">
                                     <input
                                         type="text"
@@ -126,14 +128,14 @@ export default function ChatBot() {
                                         onChange={(e) => setInput(e.target.value)}
                                         onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                                         placeholder="Type your question..."
-                                        className="flex-1 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                                        className="flex-1 p-2.5 md:p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 text-sm md:text-base"
                                     />
                                     <Button
                                         onClick={handleSend}
                                         disabled={isLoading}
-                                        className="bg-red-500 hover:bg-red-600 text-white px-4 rounded-md"
+                                        className="bg-red-500 hover:bg-red-600 text-white px-4 md:px-5 rounded-md"
                                     >
-                                        <Send className="w-4 h-4" />
+                                        <Send className="w-4 h-4 md:w-5 md:h-5" />
                                     </Button>
                                 </div>
                             </div>

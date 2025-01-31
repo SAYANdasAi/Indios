@@ -1,4 +1,4 @@
-import {TagIcon} from '@sanity/icons'
+import { FaTag } from 'react-icons/fa';
 import { title } from 'process'
 import {defineField, defineType} from 'sanity'
 
@@ -6,7 +6,7 @@ export const categoryType = defineType({
   name: 'category',
   title: 'Category',
   type: 'document',
-  icon: TagIcon,
+  icon: FaTag,
   fields: [
     defineField({
       name: 'title',

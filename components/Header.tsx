@@ -14,7 +14,9 @@ function Header() {
   const { user } = useUser();
   // const basketItems = useBasketStore((state) => state.items);
   const wishlistItems = useWishlistStore((state) => state.items);
-  const orderCount = useOrderStore((state) => state.orderCount);
+  // Only show order count if there are actual orders
+  const orders = useOrderStore((state) => state.orders);
+  const orderCount = orders?.length || 0;
   const itemCount = useBasketStore((state) =>
     state.items.reduce((total, item) => total + item.quantity, 0)
   );

@@ -1,12 +1,11 @@
-import { TagIcon } from "@sanity/icons";
-import { title } from "process";
+import { FaPercent } from "react-icons/fa";
 import { defineField, defineType } from "sanity";
 
 export const salesType = defineType({
     name: "sale",
     title: "Sale",
     type: "document",
-    icon: TagIcon,
+    icon: FaPercent,
     fields: [
         defineField({
             name: "title",
@@ -55,7 +54,7 @@ export const salesType = defineType({
             isActive: "isActive",
         },
         prepare(selection) {
-            const { title, discountAmount, couponCode, isActive} = Selection;
+            const { title, discountAmount, couponCode, isActive} = selection;
             const status = isActive ? "Active" : "Inactive";
             return {
                 title,
